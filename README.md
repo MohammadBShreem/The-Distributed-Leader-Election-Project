@@ -228,7 +228,11 @@ exploreNeighbors(msg, sender):
         If no answers are awaited:
             Send confirmation message to parent with weight.
 ```
-
+<div align="center">
+<img src="https://github.com/user-attachments/assets/a6d2e535-2b41-4ec9-9f88-b52ee4da194c"></br>
+<i>Diagram</i>
+</div>
+</br>
 ---
 
 3. **Tree Weight Propagation**:
@@ -307,6 +311,12 @@ dismantleTree(msg, sender):
     If module is a leaf && has a WinPort:
         Notify parent about dismantling completion.
 ```
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/bc347406-c36a-4ffa-987e-f06db61fe285"></br>
+<i>Diagram</i>
+</div>
+</br>
 
 ---
 
