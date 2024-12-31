@@ -1,4 +1,4 @@
-Leader election algorithm for modular robots
+#Leader election algorithm for modular robots
 
 authors:
   * [Mohammad SHREM](https://www.linkedin.com/in/mohammadbshreem/) <mohammad.shrem@edu.univ-fcomte.fr>
@@ -344,22 +344,55 @@ The process result is shown below; we started with chain model of 199 block as s
 2. **Cube Model**:
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/bcb9e94c-1467-4c91-8926-142c78df0bce"></br>
+<img src="https://github.com/user-attachments/assets/1786c6d1-ca82-4adf-b78c-d4393266d7d7"></br>
 <i>Figure 7: simulation of cube model</i>
 </div>
-
 
 
 4. **Random Model**:
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/da366b3f-2c8c-463f-9985-5301a28eec30"></br>
-<i>Figure 6-b: simulation of obvious model</i>
+<img src="https://github.com/user-attachments/assets/0a88cfe2-c613-4487-a2bb-08f9774e3632"></br>
+<i>Figure8: simulation of random model</i>
+</div>
+
+5. **Videos**:
+
+
+https://github.com/user-attachments/assets/b3ac0597-2829-4b22-946a-84b4da05bffe
+<div align="center">
+<i>Figure 9-a: simulation video of Exo & Chain</i>
 </div>
 
 
+<div align="center">
+<i>Figure 9-b: simulation video of Cube & Random</i>
+</div>
+
+6. **Ploting**:
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/147f7a12-1700-45ef-841b-407bebbf1aa9"></br>
+<i>Figure 10-a: Linear Plot: Number Of Robot</i>
+</div>
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/11316a4f-5080-4622-8435-0979d1104714"></br>
+<i>Figure 10-b: Linear Plot: Elapsed Time</i>
+</div>
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/20ccff3d-e5f2-4594-ae39-c3f12191dce2"></br>
+<i>Figure 10-c: Number of Events Processed</i>
+</div>
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/753d2063-7a9b-48ed-a4ef-a31183a18480"></br>
+<i>Figure 10-d: Number of Messages Processed</i>
+</div>
+
 ##  Conclusions
 This algorithm is needed not only to play the evolution of digital trees, but also has a very useful and important application. in decentralized systems where the task is to select a leader, this algorithm can be used on an equal footing with the ABC-Center, k-BFS SumSweep, etc.
-
+Note: We faced a time glitch; which not the same based on the machine or laptop
 
 
