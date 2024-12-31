@@ -358,12 +358,10 @@ The process result is shown below; we started with chain model of 199 block as s
 
 5. **Videos**:
 
-
 https://github.com/user-attachments/assets/b3ac0597-2829-4b22-946a-84b4da05bffe
 <div align="center">
 <i>Figure 9-a: simulation video of Exo & Chain</i>
 </div>
-
 
 <div align="center">
 <i>Figure 9-b: simulation video of Cube & Random</i>
@@ -377,18 +375,23 @@ https://github.com/user-attachments/assets/b3ac0597-2829-4b22-946a-84b4da05bffe
 </div>
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/11316a4f-5080-4622-8435-0979d1104714"></br>
+<img src="https://github.com/user-attachments/assets/ba70b8ac-3c72-4457-be95-d5db94115c42"></br>
 <i>Figure 10-b: Linear Plot: Elapsed Time</i>
 </div>
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/20ccff3d-e5f2-4594-ae39-c3f12191dce2"></br>
+<img src="https://github.com/user-attachments/assets/4f526058-91b5-4257-bc5b-e14291358067"></br>
 <i>Figure 10-c: Number of Events Processed</i>
 </div>
 
 <div align="center">
-<img src="https://github.com/user-attachments/assets/753d2063-7a9b-48ed-a4ef-a31183a18480"></br>
+<img src="https://github.com/user-attachments/assets/c010d277-cddc-4b7e-bd54-2def8523f258"></br>
 <i>Figure 10-d: Number of Messages Processed</i>
+</div>
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/a68a29fb-f557-45a7-8ed1-74e634ee9e20"></br>
+<i>Figure 10-e: Combined Plot of Metrics Across Scenarios</i>
 </div>
 
 ##  Conclusions
