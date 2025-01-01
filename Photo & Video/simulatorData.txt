@@ -1,0 +1,69 @@
+Fullgrid cube:
+
+Number of robots: 200
+Simulator elapsed time: 272862 us
+Real elapsed time: 13483928.00 us
+Number of events processed: 15698
+Number of messages processed: 3489
+Number of motions processed: 0
+Maximum sized reached by the events list: 1180
+Size of the events list at the end: 0
+Events(s) left in memory before destroying Scheduler: 0
+Message(s) left in memory before destroying Scheduler: 18446744073709549690
+Number of events processed per second: 1164.20
+
+Exo:
+Number of robots: 39
+Simulator elapsed time: 370484 us
+Real elapsed time: 4626232.00 us
+Number of events processed: 1623
+Number of messages processed: 358
+Number of motions processed: 0
+Maximum sized reached by the events list: 123
+Size of the events list at the end: 0
+Events(s) left in memory before destroying Scheduler: 0
+Message(s) left in memory before destroying Scheduler: 18446744073709551394
+Number of events processed per second: 350.83
+
+
+Chain:
+Number of robots: 197
+Simulator elapsed time: 2306651 us
+Real elapsed time: 42061725.00 us
+Number of events processed: 6882
+Number of messages processed: 1476
+Number of motions processed: 0
+Maximum sized reached by the events list: 591
+Size of the events list at the end: 0
+Events(s) left in memory before destroying Scheduler: 0
+Message(s) left in memory before destroying Scheduler: 18446744073709550636
+Number of events processed per second: 163.62
+
+
+Config:
+Number of robots: 11
+Simulator elapsed time: 273030 us
+Real elapsed time: 4692830.00 us
+Number of events processed: 421
+Number of messages processed: 92
+Number of motions processed: 0
+Maximum sized reached by the events list: 33
+Size of the events list at the end: 0
+Events(s) left in memory before destroying Scheduler: 0
+Message(s) left in memory before destroying Scheduler: 18446744073709551564
+Number of events processed per second: 89.71
+
+
+Random:
+Number of robots: 99
+Simulator elapsed time: 469291 us
+Real elapsed time: 19214217.00 us
+Number of events processed: 11892
+Number of messages processed: 2852
+Number of motions processed: 0
+Maximum sized reached by the events list: 457
+Size of the events list at the end: 0
+Events(s) left in memory before destroying Scheduler: 0
+Message(s) left in memory before destroying Scheduler: 18446744073709550185
+Number of events processed per second: 618.92
+
