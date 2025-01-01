@@ -21,6 +21,7 @@ leaderElectionCode::leaderElectionCode(BlinkyBlocksBlock *host) : BlinkyBlocksBl
     addMessageEventFunc2(TYPE_10_NOTCUBE, [this](auto && PH1, auto && PH2) { notifyNeighborsNotACube(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
     addMessageEventFunc2(TYPE_11_CUBE_LEADER_UPDATE, [this](auto && PH1, auto && PH2) { notifyParentYouAreACubeLeader(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
     addMessageEventFunc2(TYPE_12_CUBE_CHECK, [this](auto && PH1, auto && PH2) { CheckIfCube(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
+    addMessageEventFunc2(TYPE_13_REST_IN_PROCESS, [this](auto && PH1, auto && PH2) { UpdateMyParent(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2)); });
 
 }
 
@@ -45,17 +46,15 @@ void leaderElectionCode::startup() {
         if(module->getInterface(i)->isConnected()){
             binaryStringId += "1";
             totalConnectedInt++;
-            interfaceStatus[i]=1;
         }else{
             binaryStringId += "0";
-            interfaceStatus[i]=0;
         }
     }
 
     binaryIntId = weight = std::strtol(binaryStringId.c_str(), nullptr, 2);;
     console<<"Block Wight = "<<binaryIntId<<"\n";
 
-    if(totalConnectedInt==1) {
+    if(totalConnectedInt==1000 && weight<37) {
         module->setColor(RED);
         isProspectiveLeader = true;
         isDiscovered = true;
@@ -64,13 +63,12 @@ void leaderElectionCode::startup() {
         colorId = NUM++;
         module->setColor(colorId);
         sendMessageToAllNeighbors("Not a cube!", new MessageOf(TYPE_10_NOTCUBE,colorId), 10, 0, 0);
-        nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf(TYPE_1_EXPLORE,colorId), 1000, 0, 0);
+        nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf(TYPE_1_EXPLORE,colorId), 100, 0, 0);
     }
     else if(totalConnectedInt==3 && weight>37) {
-        //we are waiting for 20000 millisecond; to make sure if we have a block with 1 connected interface it's started & not the shape is not a Cube
+        //we are waiting for 500000 millisecond; to make sure if we have a block with 1 connected interface it's started & not the shape is not a Cube
         colorId = NUM++;
-        nbWaitedAnswers=sendMessageToAllNeighbors("Cube Check", new MessageOf(TYPE_12_CUBE_CHECK,colorId), 20000, 0, 0);
-
+        nbWaitedAnswers=sendMessageToAllNeighbors("Cube Check", new MessageOf(TYPE_12_CUBE_CHECK,colorId), 500000, 0, 0);
     }
 }
 
@@ -85,8 +83,12 @@ void leaderElectionCode::exploreNeighbors(const std::shared_ptr<Message>& msg, P
         childrenModules.clear();
         childrenSizes.clear();
         module->setColor(colorID);
+        isDismantling=false;
+        isRestting=false;
         isDiscovered = true;
         parentModule = sender;
+        colorId = colorID;
+        isExploring = false;
         nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf<int>(TYPE_1_EXPLORE,colorID), 1000, 0, 1, parentModule);
         if(nbWaitedAnswers == 0) {
             // send weight
@@ -111,17 +113,19 @@ void leaderElectionCode::confirmChild(const std::shared_ptr<Message>& msg, P2PNe
 
             //Here we are on the PL; so now we have the Prospective Leader Total Weight of All Blocks
             myTreeTotalWeight=total;
-            for (auto & childrenModule : childrenModules) {
-                sendMessage("TreeTotalWightUpdate", new MessageOf<int>(TYPE_4_UPDATE_PLTREE,myTreeTotalWeight), childrenModule, 1000, 0);
+            if (!childrenModules.empty()) {
+                for (auto & childrenModule : childrenModules) {
+                    sendMessage("TreeTotalWightUpdate", new MessageOf<int>(TYPE_4_UPDATE_PLTREE,myTreeTotalWeight), childrenModule, 1000, 0);
+                }
             }
         }
         else if(isExploring) {
             console <<"new total: "<<total<<"\n";
             isExploring=false;
-            sendMessage("back the new tree total to my parent!", new MessageOf<int>(TYPE_9_WIN_TREE,total-weight), parentModule, 1000, 0);
+            if (parentModule)sendMessage("back the new tree total to my parent!", new MessageOf<int>(TYPE_9_WIN_TREE,total-weight), parentModule, 1000, 0);
         }
         else {
-            sendMessage("ConfirmChild", new MessageOf<int>(TYPE_2_CONFIRM_CHILD,total), parentModule, 1000, 0);
+            if (parentModule)sendMessage("ConfirmChild", new MessageOf<int>(TYPE_2_CONFIRM_CHILD,total), parentModule, 1000, 0);
         }
     }
     childrenSizes.push_back(0);
@@ -130,8 +134,9 @@ void leaderElectionCode::rejectChild(const std::shared_ptr<Message>& msg, P2PNet
     nbWaitedAnswers--;
     if(nbWaitedAnswers == 0) {
         total+=weight;
-        if (childrenModules.empty())isLeaf=true;
-        sendMessage("ConfirmChild", new MessageOf<int>(TYPE_2_CONFIRM_CHILD,total), parentModule, 1000, 0);
+        isLeaf=true;
+        winTreeModuleParent=nullptr;
+        if (parentModule)sendMessage("ConfirmChild", new MessageOf<int>(TYPE_2_CONFIRM_CHILD,total), parentModule, 1000, 0);
     }
     console << "Module " << getId() << ",rejected child!" << sender->getConnectedBlockId() << "\n";
     console << "nbWaitedAnswers From Reject: " << nbWaitedAnswers << "\n";
@@ -143,10 +148,10 @@ void leaderElectionCode::prospectiveLeaderTreeTotalWeightUpdate(const std::share
     console <<"Module "<<getId()<<", Received Tree Total Weight ("<<totalWeight << ")\n";
 
     myTreeTotalWeight=totalWeight;
-    if (childrenModules.empty() && isLeaf && nbWaitedAnswers == 0 && myTreeTotalWeight>0) {
-        sendMessageToAllNeighbors("Leader Election Started!", new MessageOf(TYPE_7_ELECT_LEADER,totalWeight), 80000, 0,1, sender);
+    if (childrenModules.empty() && isLeaf) {
+        sendMessageToAllNeighbors("Leader Election Started!!!!", new MessageOf(TYPE_7_ELECT_LEADER,totalWeight), 5000, 0,1, parentModule);
     }
-    else {
+    else if (!childrenModules.empty()){
         for (auto & childrenModule : childrenModules) {
             sendMessage("TreeTotalWightUpdate", new MessageOf<int>(TYPE_4_UPDATE_PLTREE,totalWeight), childrenModule, 1000, 0);
         }
@@ -157,44 +162,56 @@ void leaderElectionCode::prospectiveLeaderTreeTotalWeightUpdate(const std::share
 void leaderElectionCode::electLeader(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
     int received_weight = *dynamic_cast<MessageOf<int>*>(msg.get())->getData();
     console << "Module: " << getId() << " Elect Leader Started!\n";
-
-    if (received_weight>myTreeTotalWeight && myTreeTotalWeight>0 && isDiscovered && isLeaf) {
-        //I Lost; notify my leader & dismantle the tree
-        //notify the sender you won; start election again from his leader
-        console <<"My tree Lost!\n";
-        console <<"Received tree weight: " <<received_weight <<"\n";
-        console <<"My tree weight: " <<myTreeTotalWeight <<"\n";
-        winTreeModuleParent=sender;
-    }
-    else if (received_weight<myTreeTotalWeight && myTreeTotalWeight>0 && isDiscovered && isLeaf) {
-        //I win
-        console <<"My Tree Won!\n";
-        console <<"Received tree weight: " <<received_weight <<"\n";
-        console <<"My tree weight: " <<myTreeTotalWeight <<"\n";
-        sendMessage("You lost; dismantle your tree!", new MessageOf<int>(TYPE_6_DISMANTLE,0), sender, 1000, 0);
+    if (isLeaf){
+        if (received_weight>myTreeTotalWeight) {
+            //I Lost; notify my leader & dismantle the tree
+            //notify the sender you won; start election again from his leader
+            console <<"My tree Lost!\n";
+            console <<"Received tree weight: " <<received_weight <<"\n";
+            console <<"My tree weight: " <<myTreeTotalWeight <<"\n";
+                winTreeModuleParent=sender;
+                int id = static_cast<int>(getId());
+                if (parentModule)sendMessage("You lost; dismantle your tree!", new MessageOf<int>(TYPE_6_DISMANTLE,id), parentModule, 100, 0);
+        }
+        else if (received_weight<myTreeTotalWeight) {
+            //I win
+            console <<"My Tree Won!\n";
+            console <<"Received tree weight: " <<received_weight <<"\n";
+            console <<"My tree weight: " <<myTreeTotalWeight <<"\n";
+            if (parentModule)sendMessage("notifyParentIAmRestingYou", new MessageOf<int>(TYPE_13_REST_IN_PROCESS,0), parentModule, 100, 0);
+            if (isLeaf && childrenModules.empty()) sendMessageToAllNeighbors("Leader Election Started!!!!", new MessageOf(TYPE_7_ELECT_LEADER,myTreeTotalWeight), 50000, 0,1, parentModule);
+        }
     }
 }
 
 //Phase 4: if my TreeTotalWeight win the election; so we should start again the explore process
 void leaderElectionCode::reset(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
-    console << "Module " << getId() << ", Won Message Received!\n";
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    total=0;
-    isExploring=true;
-    nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf<int>(TYPE_1_EXPLORE,colorId), 1000, 0, 1, parentModule);
+    if (!isExploring){
+        console << "Module " << getId() << ", Won Message Received!\n";
+        total=0;
+        isExploring=true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf<int>(TYPE_1_EXPLORE,colorId), 1000, 0, 1, parentModule);
+    }
 }
 void leaderElectionCode::winTreeUpdate(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
     int newTotalUpdate = *dynamic_cast<MessageOf<int>*>(msg.get())->getData();
     if (parentModule) {
         sendMessage("back the new tree total to my parent!", new MessageOf<int>(TYPE_9_WIN_TREE,newTotalUpdate), parentModule, 1000, 0);
     }
-    else {
+    else if (isProspectiveLeader){
         console <<"Current Total Tree:" <<myTreeTotalWeight<<"\n";
         console <<"New Tree Total rcv: " <<newTotalUpdate<<"\n";
         myTreeTotalWeight+=newTotalUpdate;
         console <<"My Final Total Tree " <<myTreeTotalWeight <<"\n";
-        for (auto & childrenModule : childrenModules) {
-            sendMessage("TreeTotalWightUpdate", new MessageOf<int>(TYPE_4_UPDATE_PLTREE,myTreeTotalWeight), childrenModule, 1000, 0);
+        isExploring=false;
+        isRestting=false;
+        isExploring=false;
+        isDismantling=false;
+        if (!childrenModules.empty()) {
+            for (auto & childrenModule : childrenModules) {
+                sendMessage("TreeTotalWightUpdate", new MessageOf<int>(TYPE_4_UPDATE_PLTREE,myTreeTotalWeight), childrenModule, 1000, 0);
+            }
         }
     }
 }
@@ -203,31 +220,39 @@ void leaderElectionCode::winTreeUpdate(const std::shared_ptr<Message>& msg, P2PN
 //to let the new explore process from the winner have all these nodes
 void leaderElectionCode::dismantle(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
     console << "Module " << getId() << ", dismantle!\n";
+    int senderId = *dynamic_cast<MessageOf<int>*>(msg.get())->getData();
 
-    if (parentModule == nullptr && isProspectiveLeader && !isDismantling) {
-        isDiscovered= false;
-        isLeaf=false;
-        isDismantling=true;
-        isProspectiveLeader= false;
-        total=0;
-        myTreeTotalWeight=0;
-        for (auto & childrenModule : childrenModules) {
-            sendMessage("DismantleTree", new MessageOf<int>(TYPE_8_DISMANTLE_TREE,0), childrenModule, 1000, 0);
+    if (parentModule == nullptr && isProspectiveLeader) {
+        if (!isRestting && !isExploring && !isDismantling) {
+            isDiscovered= false;
+            isLeaf=false;
+            isDismantling=true;
+            isProspectiveLeader=false;
+            total=0;
+            if (!childrenModules.empty()) {
+                for (auto & childrenModule : childrenModules) {
+                    sendMessage("DismantleTree", new MessageOf<int>(TYPE_8_DISMANTLE_TREE,senderId), childrenModule, 100, 0);
+                }
+            }
         }
     }
     else {
-        //if(isLeaf)winTreeModuleParent=sender;
-        if(parentModule)sendMessage("You lost message forward to parent!", new MessageOf<int>(TYPE_6_DISMANTLE,0), parentModule, 1000, 0);
-    }
+            if(isLeaf)winTreeModuleParent=sender;
+            if(parentModule) sendMessage("You lost message forward to parent!", new MessageOf<int>(TYPE_6_DISMANTLE,senderId), parentModule, 100, 0);
+        }
 }
+
+
 void leaderElectionCode::dismantleTree(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
+    int senderId = *dynamic_cast<MessageOf<int>*>(msg.get())->getData();
     isDiscovered= false;
     total=0;
-    myTreeTotalWeight=0;
-    if(isLeaf && winTreeModuleParent != nullptr && childrenModules.empty())sendMessage("You won; start leader election again!", new MessageOf<int>(TYPE_5_RESET,0), winTreeModuleParent, 3000, 0);
-    else{
+    //myTreeTotalWeight=0;
+    console<<"senderId:____"<<senderId<<"\n";
+    if(static_cast<int>(getId()) == senderId){  sendMessage("You won; start leader election again!", new MessageOf<int>(TYPE_5_RESET,colorId), winTreeModuleParent, 3000, 0); }
+    else if (!childrenModules.empty()){
         for (auto & childrenModule : childrenModules) {
-            sendMessage("DismantleTree", new MessageOf<int>(TYPE_8_DISMANTLE_TREE,0), childrenModule, 1000, 0);
+            sendMessage("DismantleTree", new MessageOf<int>(TYPE_8_DISMANTLE_TREE,senderId), childrenModule, 100, 0);
         }
     }
 }
@@ -242,7 +267,7 @@ void leaderElectionCode::notifyNeighborsNotACube(const std::shared_ptr<Message>&
 void leaderElectionCode::CheckIfCube(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
     int receivedColorId = *dynamic_cast<MessageOf<int>*>(msg.get())->getData();
     if (!notACube) {
-        sendMessage("notifyParentYouAreACubeLeader", new MessageOf<int>(TYPE_11_CUBE_LEADER_UPDATE,receivedColorId), sender, 1000, 0);
+        sendMessage("notifyParentYouAreACubeLeader", new MessageOf<int>(TYPE_11_CUBE_LEADER_UPDATE,receivedColorId), sender, 100000, 0);
     }
 }
 void leaderElectionCode::notifyParentYouAreACubeLeader(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
@@ -254,6 +279,16 @@ void leaderElectionCode::notifyParentYouAreACubeLeader(const std::shared_ptr<Mes
         module->setColor(colorId);
         isDiscovered = true;
         nbWaitedAnswers=sendMessageToAllNeighbors("Explore", new MessageOf(TYPE_1_EXPLORE,colorId), 2000, 0, 0);
+    }
+}
+
+void leaderElectionCode::UpdateMyParent(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender) {
+    if (parentModule == nullptr && isProspectiveLeader && !isRestting) {
+        //do start any rest; I'm updating you
+        isRestting = true;
+    }
+    else {
+        if (parentModule)sendMessage("notifyParentIAmRestingYou", new MessageOf<int>(TYPE_13_REST_IN_PROCESS,0), parentModule, 100, 0);
     }
 }
 

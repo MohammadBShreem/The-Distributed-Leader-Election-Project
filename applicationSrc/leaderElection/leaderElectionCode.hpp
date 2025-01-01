@@ -18,6 +18,7 @@ static const int TYPE_9_WIN_TREE = 2009;
 static const int TYPE_10_NOTCUBE = 2010;
 static const int TYPE_11_CUBE_LEADER_UPDATE = 2011;
 static const int TYPE_12_CUBE_CHECK = 2012;
+static const int TYPE_13_REST_IN_PROCESS = 2013;
 static int NUM = 0;
 
 using namespace BlinkyBlocks;
@@ -35,6 +36,8 @@ private:
     bool isWinTreeProcessed{};
     bool notACube = false;
     bool isDismantling = false;
+    bool isRestting=false;
+    bool isOldLeader=false;
 
     std::vector<P2PNetworkInterface *> childrenModules;
     std::vector<int> childrenSizes;
@@ -63,6 +66,8 @@ public:
     void CheckIfCube(const std::shared_ptr<Message> &msg, P2PNetworkInterface *sender);
 
     void notifyParentYouAreACubeLeader(const std::shared_ptr<Message> &msg, P2PNetworkInterface *sender);
+
+    void UpdateMyParent(const std::shared_ptr<Message> &msg, P2PNetworkInterface *sender);
 
     void exploreNeighbors(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender);
     void confirmChild(const std::shared_ptr<Message>& msg, P2PNetworkInterface *sender);
