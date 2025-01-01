@@ -358,13 +358,10 @@ The process result is shown below; we started with chain model of 199 block as s
 
 5. **Videos**:
 
-https://github.com/user-attachments/assets/b3ac0597-2829-4b22-946a-84b4da05bffe
-<div align="center">
-<i>Figure 9-a: simulation video of Exo & Chain</i>
-</div>
 
+https://github.com/user-attachments/assets/21365bcb-17a9-4f2f-8c4f-870ab2c0a12d
 <div align="center">
-<i>Figure 9-b: simulation video of Cube & Random</i>
+<i>Figure 9: simulation video</i>
 </div>
 
 6. **Ploting**:
