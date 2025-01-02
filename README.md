@@ -1,4 +1,5 @@
-#The-Distributed-Leader-Election-Project
+# The-Distributed-Leader-Election-Project
+---
 
 authors:
   * [Mohammad SHREM](https://www.linkedin.com/in/mohammadbshreem/) <mohammad.shrem@edu.univ-fcomte.fr>
@@ -152,40 +153,52 @@ The constructor (`leaderElectionCode`) performs:
 ---
 
 ## **Message Types**
-Each message type triggers a specific handler function:
-
 | **Type**                | **Purpose**                                                                 |
 |-------------------------|-----------------------------------------------------------------------------|
 | `TYPE_1_EXPLORE`        | Explore neighbors to build logical trees.                                  |
 | `TYPE_2_CONFIRM_CHILD`  | Confirm child nodes and propagate weight updates.                          |
 | `TYPE_3_REJECT_CHILD`   | Reject redundant connections.                                              |
-| `TYPE_4_UPDATE_PLTREE`  | Update the total weight of the Prospective Leader's tree.                  |
+| `TYPE_4_UPDATE_PLTREE`  | Update the total weight of the prospective leader's tree.                  |
 | `TYPE_5_RESET`          | Reset the system after leader election.                                   |
 | `TYPE_6_DISMANTLE`      | Dismantle a tree if it loses the election.                                 |
 | `TYPE_7_ELECT_LEADER`   | Notify nodes to start leader election.                                     |
 | `TYPE_8_DISMANTLE_TREE` | Propagate dismantling messages through the tree.                          |
-| `TYPE_9_WIN_TREE`       | Inform the parent about the winning tree's weight.                        |
+| `TYPE_9_WIN_TREE`       | Notify the parent about the winning tree's weight.                        |
 | `TYPE_10_NOTCUBE`       | Notify neighbors if the shape is not a cube.                               |
 | `TYPE_11_CUBE_LEADER_UPDATE` | Inform the parent about being a cube leader.                         |
 | `TYPE_12_CUBE_CHECK`    | Verify if the structure forms a cube.                                      |
+| `TYPE_13_REST_IN_PROCESS` | Update parent to handle reelection scenarios.                           |
 
+## **Key Functions**
+1. **`exploreNeighbors`**:
+   - Handles exploration messages and builds subtrees.
+2. **`confirmChild`**:
+   - Updates total subtree weights and confirms child roles.
+3. **`rejectChild`**:
+   - Rejects redundant connections during tree building.
+4. **`prospectiveLeaderTreeTotalWeightUpdate`**:
+   - Propagates the total weight of the prospective leader's tree.
+5. **`electLeader`**:
+   - Compares subtree weights and elects a leader.
+6. **`reset`**:
+   - Resets the system for further exploration.
+7. **`notifyNeighborsNotACube`**:
+   - Identifies non-cube structures and broadcasts information.
+8. **`CheckIfCube`**:
+   - Validates cube structures.
+9. **`dismantle` and `dismantleTree`**:
+   - Handles tree dismantling for losing trees.
 ---
 
 ## **Key Variables**
 - **`isDiscovered`**: Indicates whether a node is part of a tree.
 - **`isLeaf`**: Marks leaf nodes.
-- **`myTreeTotalWeight`**: Stores the total weight of the subtree for which the node is responsible.
 - **`nbWaitedAnswers`**: Tracks expected replies from neighbors.
 - **`binaryStringId`**: Binary representation of a node's connections.
+- **`weight`**: integer of a node's connections.
 - **`total`**: Cumulative weight of the subtree.
-
----
-
-## **Key Functions**
-- **`sendMessageToAllNeighbors`**:
-  - Broadcasts a message to all connected neighbors.
-- **`sendMessage`**:
-  - Sends a message to a specific neighbor.
+- **`myTreeTotalWeight`**: Stores the total weight of the subtree for which the node is responsible.
+- **`isDismantling, isResting`**: handle the status of current working process for the tree.
 
 ---
 
