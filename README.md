@@ -1,4 +1,4 @@
-#Leader election algorithm for modular robots
+#The-Distributed-Leader-Election-Project
 
 authors:
   * [Mohammad SHREM](https://www.linkedin.com/in/mohammadbshreem/) <mohammad.shrem@edu.univ-fcomte.fr>
