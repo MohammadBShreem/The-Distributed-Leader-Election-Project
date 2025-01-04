@@ -124,9 +124,37 @@ The constructor (`leaderElectionCode`) performs:
 **Objective**: Elect the leader with the heaviest tree.
 
 **Process**:
-- Nodes compare their tree's total weight with others.
-- If a node loses, it dismantles its tree.
-- The winning tree continues to explore and expand, eventually becoming the leader.
+
+1. **Initial Comparison**
+- Every **leaf node** initiates the leader election process by comparing its tree's total weight with its neighbors.
+- A node will start the process only if it is a **leaf node** and receives a leader election message.
+
+2. **Conflict Resolution**
+- To prevent multiple concurrent processes:
+  - If a node loses the election, it dismantles its tree by notifying its **Prospective Leader (PL)** node.
+  - The port of the winning sender is saved for future notifications.
+
+3. **Dismantling the Tree**
+- The losing node requests permission from its PL node to begin dismantling. This ensures only one process (dismantling or resetting) runs at a time.
+- If the PL grants permission:
+  - The node toggles on the **isDismantling flag**.
+  - It starts dismantling its tree, working back to the source leaf node.
+  - Upon reaching the source, the node notifies its neighbor (using the saved port) to start resetting from their side.
+
+4. **Winning Node Reset**
+- The winning node resets its tree by expanding and exploring from its **winning leaf**.
+- Before resetting, it notifies its PL to ensure no other process is currently running.
+- If the PL grants permission:
+  - The node toggles on the **isRestting flag**.
+  - going back to the request source leaf node.
+  - Upon reaching the source, the node start explore and expand, ultimately assuming the role of the leader.
+
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/f883d382-af86-438e-b201-401d98945b66"></br>
+<i>Figure: Leader Election Process</i>
+</div>
+</br>
 
 ### **Phase 4: Reset and Exploration**
 **Objective**: Reset the system after electing a leader and restart exploration.
@@ -142,7 +170,7 @@ The constructor (`leaderElectionCode`) performs:
 - Nodes receiving a "Dismantle" message detach from their tree.
 - If the root dismantles, all its children are notified.
 
-### **Special Phase: Cube-Shaped Structures**
+### **Special Phase: non single neighbor Structures**
 **Objective**: In the event that the distributed system forms a perfect cube structure, the leader election process includes additional checks to ensure the integrity of the cube. 
 
 **Process**:
@@ -199,6 +227,12 @@ The constructor (`leaderElectionCode`) performs:
 - **`total`**: Cumulative weight of the subtree.
 - **`myTreeTotalWeight`**: Stores the total weight of the subtree for which the node is responsible.
 - **`isDismantling, isResting`**: handle the status of current working process for the tree.
+
+<div align="center">
+<img src="https://github.com/user-attachments/assets/f90042a0-8c2e-4e75-88f0-a88a7cfe0ded"></br>
+<i>Figure: Exploring Node Management in Distributed Systems</i>
+</div>
+</br>
 
 ---
 
