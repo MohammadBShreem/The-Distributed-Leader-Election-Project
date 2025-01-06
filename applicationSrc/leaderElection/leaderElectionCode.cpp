@@ -54,7 +54,7 @@ void leaderElectionCode::startup() {
     binaryIntId = weight = std::strtol(binaryStringId.c_str(), nullptr, 2);;
     console<<"Block Wight = "<<binaryIntId<<"\n";
 
-    if(totalConnectedInt==1000 && weight<37) {
+    if(totalConnectedInt==1) {
         module->setColor(RED);
         isProspectiveLeader = true;
         isDiscovered = true;
